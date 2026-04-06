@@ -10,11 +10,15 @@ import com.pki.pkitest.Models.RequestCSRModel;
 import com.pki.pkitest.Services.JwsServices;
 import com.pki.pkitest.Services.PkiServices;
 import com.pki.pkitest.Services.ServisCifer;
+import com.pki.pkitest.Services.UserService;
 
 import org.springframework.http.ResponseEntity;                                                                  
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+
+
 
 
 @RestController
@@ -23,11 +27,13 @@ public class Controllers {
     private final ServisCifer ciferServis;
     private final PkiServices pkiServices;
     private final JwsServices jwsServices;
+    private final UserService userService;
 
-    public Controllers(ServisCifer servisCifer, PkiServices pkiServices, JwsServices jwsServices){
+    public Controllers(ServisCifer servisCifer, PkiServices pkiServices, JwsServices jwsServices, UserService userService){
         this.ciferServis = servisCifer;
         this.pkiServices = pkiServices;
         this.jwsServices = jwsServices;
+        this.userService = userService;
     }
 
     @PostMapping("/ciferAES")
@@ -51,7 +57,9 @@ public class Controllers {
         
         return ResponseEntity.ok(jwsServices.crearJWS(paylod));
     }
-    
-    
-    
+
+    @GetMapping("/testUser")
+    public void testUser() {
+        userService.newUser("test_user", "test@mail.com", "test");
+    }
 }
