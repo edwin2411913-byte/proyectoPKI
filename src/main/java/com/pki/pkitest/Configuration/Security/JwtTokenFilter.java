@@ -33,7 +33,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String token = header.substring(7);
         try {
         SignedJWT signedJWT = SignedJWT.parse(token);
-        RSAPublicKey publicKey = (RSAPublicKey)certificateUtils.getCaCert("CA_JWS").getPublicKey();
+        RSAPublicKey publicKey = (RSAPublicKey)certificateUtils.getCaCert("CA_JWT").getPublicKey();
 
         JWSVerifier verifier = new RSASSAVerifier(publicKey);
 

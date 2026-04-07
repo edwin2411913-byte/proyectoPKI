@@ -1,8 +1,6 @@
 package com.pki.pkitest.Entitys;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,77 +9,39 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "api_keys")
+@Table(name = "MITCMS02_APIKEY")
 public class ApiKey {
     @Id
     @GeneratedValue
+    @Column(name = "CD_ID")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "CD_USER_ID", nullable = false)
     private Users user;
 
+    @Column(name = "NB_NAME", length = 100)
     private String name;
 
-    @Column(name = "key_prefix", length = 10, nullable = false)
-    private String keyPrefix;
-
-    @Column(name = "key_hash", nullable = false)
+    @Column(name = "NB_KEY_HASH", nullable = false)
     private String keyHash;
 
+    @Column(name = "FH_EXPIRES_AT")
     private OffsetDateTime expiresAt;
+
+    @Column(name = "FH_LAST_USED_AT")
     private OffsetDateTime lastUsedAt;
+
+    @Column(name = "FH_CREATED_AT", updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
-    public UUID getId() {
-        return id;
-    }
-    public void setId(UUID id) {
-        this.id = id;
-    }
-    public Users getUser() {
-        return user;
-    }
-    public void setUser(Users user) {
-        this.user = user;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getKeyPrefix() {
-        return keyPrefix;
-    }
-    public void setKeyPrefix(String keyPrefix) {
-        this.keyPrefix = keyPrefix;
-    }
-    public String getKeyHash() {
-        return keyHash;
-    }
-    public void setKeyHash(String keyHash) {
-        this.keyHash = keyHash;
-    }
-    public OffsetDateTime getExpiresAt() {
-        return expiresAt;
-    }
-    public void setExpiresAt(OffsetDateTime expiresAt) {
-        this.expiresAt = expiresAt;
-    }
-    public OffsetDateTime getLastUsedAt() {
-        return lastUsedAt;
-    }
-    public void setLastUsedAt(OffsetDateTime lastUsedAt) {
-        this.lastUsedAt = lastUsedAt;
-    }
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+}
 
     
-}

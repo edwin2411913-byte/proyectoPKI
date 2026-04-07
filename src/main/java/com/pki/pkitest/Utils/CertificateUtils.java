@@ -38,10 +38,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class CertificateUtils {
 
+    private DataBaseUtils dataBaseUtils;
+
     public KeyStore ks;
 
-    public CertificateUtils(@Qualifier("hsmKeyStore") KeyStore keyStore) {
+    public CertificateUtils(@Qualifier("hsmKeyStore") KeyStore keyStore, DataBaseUtils dataBaseUtils) {
         this.ks = keyStore;
+        this.dataBaseUtils = dataBaseUtils;
     }
 
     public X509Certificate getCaCert(String alias){
@@ -78,7 +81,7 @@ public class CertificateUtils {
 
         BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
         Date notBefore = new Date();
-        Date notAfter = new Date(System.currentTimeMillis() + (365L * 24 * 60 * 60 * 1000));
+        Date notAfter = new Date(System.currentTimeMillis() + ((365L * 24 * 60 * 60 * 1000))*2); 
 
         X509v3CertificateBuilder cBuilder = new JcaX509v3CertificateBuilder(
             X500Name.getInstance(caCert.getSubjectX500Principal().getEncoded()), 
@@ -99,8 +102,9 @@ public class CertificateUtils {
 
         X509CertificateHolder holder = cBuilder.build(signer);
 
-        X509Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
-        return convertoToPem(cert);
+        String cert = convertoToPem( new JcaX509CertificateConverter().getCertificate(holder));
+        dataBaseUtils.guardarCertificado(cert, serial.toString(), csr.getSubject().toString(), 730);
+        return cert;
         
         
         }catch(Exception e){
@@ -179,5 +183,6 @@ public class CertificateUtils {
             throw new RuntimeException("Erro al convertir cadena string csr a PKCS10");
         }
     }
+
 
 }

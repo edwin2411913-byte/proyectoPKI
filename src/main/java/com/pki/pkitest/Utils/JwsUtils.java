@@ -42,7 +42,7 @@ public class JwsUtils {
          
         try{
         
-            PrivateKey jwsPrivate= certificateUtils.getCaPrivateKey("CA_JWS");
+            PrivateKey jwsPrivate= certificateUtils.getCaPrivateKey("CA_JWT");
 
 
            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()

@@ -13,62 +13,34 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "audit_logs")
+@Table(name = "MITCMS06_AUDIT_LOGS")
 public class AuditLog {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "CD_ID")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "CD_USER_ID")
     private Users user;
 
-    @Column(nullable = false)
+    @Column(name = "NB_ACTION", nullable = false, length = 100)
     private String action;
 
-    @Column(columnDefinition = "jsonb")
-    private String details; // Puedes usar una librería como Hibernate Types para mapear JSONB a Map o POJO
+    @Column(name = "NB_DETAILS", columnDefinition = "jsonb")
+    private String details; // Se puede usar una clase personalizada si tienes un convertidor de JSON
 
+    @Column(name = "NB_IP_ADDRESS", length = 45)
     private String ipAddress;
-    private OffsetDateTime timestamp = OffsetDateTime.now();
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public Users getUser() {
-        return user;
-    }
-    public void setUser(Users user) {
-        this.user = user;
-    }
-    public String getAction() {
-        return action;
-    }
-    public void setAction(String action) {
-        this.action = action;
-    }
-    public String getDetails() {
-        return details;
-    }
-    public void setDetails(String details) {
-        this.details = details;
-    }
-    public String getIpAddress() {
-        return ipAddress;
-    }
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-    public OffsetDateTime getTimestamp() {
-        return timestamp;
-    }
-    public void setTimestamp(OffsetDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
 
-    
+    @Column(name = "FH_TIMESTAMP", updatable = false)
+    private OffsetDateTime timestamp = OffsetDateTime.now();
 }

@@ -8,58 +8,40 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "revocations")
+@Table(name = "MITCMS05_REVOCATIONS")
 public class Revocation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "CD_ID")
     private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "serial_number", referencedColumnName = "serial_number", nullable = false)
-    private Certificate certificate;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CD_SERIAL_NUMBER", nullable = false, referencedColumnName = "CD_SERIAL_NUMBER")
+    private Certificates certificate;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "NB_REASON", nullable = false)
     private RevocationReason reason;
 
+    @Column(name = "FH_REVOKED_AT", updatable = false)
     private OffsetDateTime revokedAt = OffsetDateTime.now();
+
+    @Column(name = "FH_INVALIDITY_DATE")
     private OffsetDateTime invalidityDate;
-    public Integer getId() {
-        return id;
-    }
-    public void setId(Integer id) {
-        this.id = id;
-    }
-    public Certificate getCertificate() {
-        return certificate;
-    }
-    public void setCertificate(Certificate certificate) {
-        this.certificate = certificate;
-    }
-    public RevocationReason getReason() {
-        return reason;
-    }
-    public void setReason(RevocationReason reason) {
-        this.reason = reason;
-    }
-    public OffsetDateTime getRevokedAt() {
-        return revokedAt;
-    }
-    public void setRevokedAt(OffsetDateTime revokedAt) {
-        this.revokedAt = revokedAt;
-    }
-    public OffsetDateTime getInvalidityDate() {
-        return invalidityDate;
-    }
-    public void setInvalidityDate(OffsetDateTime invalidityDate) {
-        this.invalidityDate = invalidityDate;
-    }
 }
