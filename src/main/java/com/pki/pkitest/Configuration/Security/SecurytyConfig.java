@@ -1,8 +1,11 @@
 package com.pki.pkitest.Configuration.Security;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,15 +24,24 @@ public class SecurytyConfig {
     public SecurityFilterChain filterChain(HttpSecurity http){
         try{
             http
-           .csrf(csrf -> csrf.disable())
-           .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-           )
+           
            .authorizeHttpRequests(aut -> aut
-                .requestMatchers("/**").permitAll()
-                .anyRequest().authenticated()
-                
-           ).addFilterBefore(new JwtTokenFilter(certificateUtils), UsernamePasswordAuthenticationFilter.class);
+                .requestMatchers(HttpMethod.DELETE, "/**").denyAll()
+                .requestMatchers(HttpMethod.PUT, "/**").denyAll()
+                .requestMatchers(HttpMethod.HEAD, "/**").denyAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").denyAll()
+                .requestMatchers(HttpMethod.PATCH, "/**").denyAll()
+                .requestMatchers(HttpMethod.TRACE, "/**").denyAll()
+                .anyRequest()
+                .authenticated())
+
+           .csrf(csrf -> csrf.disable())
+           .cors(Customizer.withDefaults())
+           .headers(headers -> headers.cacheControl(cacheControlConfig->{})) 
+           .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+           .httpBasic(Customizer.withDefaults())
+           .addFilterBefore(new JwtTokenFilter(certificateUtils), UsernamePasswordAuthenticationFilter.class);
 
            return http.build();
 
