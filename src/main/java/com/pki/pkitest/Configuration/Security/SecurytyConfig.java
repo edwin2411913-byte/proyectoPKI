@@ -9,6 +9,12 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,6 +32,12 @@ public class SecurytyConfig {
             http
            
            .authorizeHttpRequests(aut -> aut
+
+                .requestMatchers(HttpMethod.POST,"/ciferAES").hasRole("AES_USER")
+                .requestMatchers(HttpMethod.POST,"/deciferAES").hasRole("AES_USER")
+                //.requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("KRD_USER","KDH_USER", "MTLS_USER")
+                .requestMatchers(HttpMethod.POST,"/getJWS").hasAnyRole("KRD_USER","KDH_USER", "MTLS_USER")
+                .requestMatchers(HttpMethod.GET,"/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").denyAll()
                 .requestMatchers(HttpMethod.PUT, "/**").denyAll()
                 .requestMatchers(HttpMethod.HEAD, "/**").denyAll()
@@ -49,5 +61,42 @@ public class SecurytyConfig {
         }catch(Exception ex){
             throw new RuntimeException("Eroor en la configuracion inical de seguridad" + ex.getMessage());
         }
+    }
+
+    @Bean
+    public UserDetailsService memoryUsers(){
+
+        UserDetails KRD = User.builder()
+                                .username("KRD_USER")
+                                .password(passwordEncoder().encode("KRD_USER"))
+                                .roles("KRD_USER")
+                                .build();
+
+        UserDetails KDH = User.builder()
+                                .username("KDH_USER")
+                                .password(passwordEncoder().encode("KDH_USER"))
+                                .roles("KDH_USER")
+                                .build();
+
+        UserDetails MTLS = User.builder()
+                                .username("MTLS_USER")
+                                .password(passwordEncoder().encode("MTLS_USER"))
+                                .roles("MTLS_USER")
+                                .build();
+
+         UserDetails AES = User.builder()
+                                .username("AES_USER")
+                                .password(passwordEncoder().encode("AES_USER"))
+                                .roles("AES_USER")
+                                .build();
+
+        
+
+        return new InMemoryUserDetailsManager(KRD, KDH, MTLS, AES);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
