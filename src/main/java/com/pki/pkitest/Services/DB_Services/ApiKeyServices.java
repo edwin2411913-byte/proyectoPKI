@@ -24,9 +24,8 @@ public class ApiKeyServices {
     public Users getUserByApiKey(String StringApikey){
 
         String hashApikey = ciferUtils.calcularSha256(StringApikey);
-
         ApiKey apiKey = apiKeyRepository.findByKeyHash(hashApikey)
-                        .orElseThrow(() ->  new BadCredentialsException("Apikey no valida"));
+                        .orElseThrow(() ->  new BadCredentialsException("Apikey no valida"));               
         return apiKey.getUser(); 
     }
 }

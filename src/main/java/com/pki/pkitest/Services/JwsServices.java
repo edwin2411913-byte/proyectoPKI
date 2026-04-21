@@ -18,8 +18,8 @@ public class JwsServices {
     }
 
 
-    public String crearJWS(JWSGeneral contenido){
-        return jwsUtils.crearJWS(contenido);
+    public String crearJWS(JWSGeneral contenido , String user){
+        return jwsUtils.crearJWS(contenido, user);
     }
 
     public RequestCSRModel convertJWTInCSR (  Object signedJWT){

@@ -35,8 +35,8 @@ public class SecurytyConfig {
 
                 .requestMatchers(HttpMethod.POST,"/ciferAES").hasRole("AES_USER")
                 .requestMatchers(HttpMethod.POST,"/deciferAES").hasRole("AES_USER")
-                //.requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("KRD_USER","KDH_USER", "MTLS_USER")
-                .requestMatchers(HttpMethod.POST,"/getJWS").hasAnyRole("KRD_USER","KDH_USER", "MTLS_USER")
+                .requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("KRD_USER","KDH_USER", "MTLS_USER")
+                .requestMatchers(HttpMethod.POST,"/getJWS").permitAll()
                 .requestMatchers(HttpMethod.GET, "/TestApikey").permitAll()
                 .requestMatchers(HttpMethod.GET,"/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").denyAll()
@@ -64,37 +64,6 @@ public class SecurytyConfig {
         }
     }
 
-    @Bean
-    public UserDetailsService memoryUsers(){
-
-        UserDetails KRD = User.builder()
-                                .username("KRD_USER")
-                                .password(passwordEncoder().encode("KRD_USER"))
-                                .roles("KRD_USER")
-                                .build();
-
-        UserDetails KDH = User.builder()
-                                .username("KDH_USER")
-                                .password(passwordEncoder().encode("KDH_USER"))
-                                .roles("KDH_USER")
-                                .build();
-
-        UserDetails MTLS = User.builder()
-                                .username("MTLS_USER")
-                                .password(passwordEncoder().encode("MTLS_USER"))
-                                .roles("MTLS_USER")
-                                .build();
-
-         UserDetails AES = User.builder()
-                                .username("AES_USER")
-                                .password(passwordEncoder().encode("AES_USER"))
-                                .roles("AES_USER")
-                                .build();
-
-        
-
-        return new InMemoryUserDetailsManager(KRD, KDH, MTLS, AES);
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

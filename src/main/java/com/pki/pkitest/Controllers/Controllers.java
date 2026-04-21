@@ -12,7 +12,9 @@ import com.pki.pkitest.Services.PkiServices;
 import com.pki.pkitest.Services.ServisCifer;
 
 
-import org.springframework.http.ResponseEntity;                                                                  
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,9 +54,10 @@ public class Controllers {
     }
 
     @PostMapping("getJWS")
-    public ResponseEntity<String> postMethodName(@RequestBody JWSGeneral paylod) {
-        
-        return ResponseEntity.ok(jwsServices.crearJWS(paylod));
+    public ResponseEntity<String> postMethodName(Authentication authentication,@RequestBody JWSGeneral paylod) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    
+        return ResponseEntity.ok(jwsServices.crearJWS(paylod, userDetails.getUsername()));
     }
 
     

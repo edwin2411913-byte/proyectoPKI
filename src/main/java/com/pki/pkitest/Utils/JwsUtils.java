@@ -16,8 +16,11 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.pki.pkitest.Entitys.Role;
+import com.pki.pkitest.Entitys.Users;
 import com.pki.pkitest.Models.JWSGeneral;
 import com.pki.pkitest.Models.RequestCSRModel;
+import com.pki.pkitest.Services.DB_Services.UserService;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -29,27 +32,32 @@ public class JwsUtils {
 
     private CertificateUtils certificateUtils;
 
+    private UserService usersService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
-    public JwsUtils(@Qualifier("hsmKeyStore") KeyStore keyStore, CertificateUtils certificateUtils) {
+    public JwsUtils(@Qualifier("hsmKeyStore") KeyStore keyStore, CertificateUtils certificateUtils, UserService userService) {
         this.certificateUtils = certificateUtils; 
         this.ks = keyStore;   
+        this.usersService = userService;
     }
 
      
-    public String crearJWS(JWSGeneral contenido){
+    public String crearJWS(JWSGeneral contenido, String user){
          
         try{
         
             PrivateKey jwsPrivate= certificateUtils.getCaPrivateKey("CA_JWT");
-
+            
+            Users users = usersService.getUser(user);
 
            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                                    .subject("USER")
+                                    .subject(users.getUsername())
                                     .issueTime(new Date())
                                     .expirationTime(new Date(new Date().getTime() + 3600 * 10000))
-                                    .claim("Payloud", contenido)
+                                    .claim("Payload", contenido)
+                                    .claim("authorities", users.getRoles().stream().map(Role::getName).toList())
                                     .build();
             
             SignedJWT signedJWT = new SignedJWT(

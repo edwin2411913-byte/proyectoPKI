@@ -3,7 +3,10 @@ package com.pki.pkitest.Configuration.Security;
 import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.nimbusds.jose.JWSVerifier;
@@ -41,12 +44,20 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             
                 
                 JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
-                Object payloadObject = claims.getClaim("Payloud");
+                List<String> roles = claims.getStringListClaim("authorities");
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                if (roles != null) {
+                authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .toList();
+    } 
+
+                Object payloadObject = claims.getClaim("Payload");
                 request.setAttribute("payload_jws", payloadObject);
                 String username = claims.getSubject();
 
                 UsernamePasswordAuthenticationToken auth = 
-                    new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
+                    new UsernamePasswordAuthenticationToken(username, null, authorities);
                 
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } else {
