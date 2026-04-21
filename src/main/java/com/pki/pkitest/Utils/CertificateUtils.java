@@ -38,13 +38,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class CertificateUtils {
 
-    private DataBaseUtils dataBaseUtils;
 
     public KeyStore ks;
 
-    public CertificateUtils(@Qualifier("hsmKeyStore") KeyStore keyStore, DataBaseUtils dataBaseUtils) {
+    public CertificateUtils(@Qualifier("hsmKeyStore") KeyStore keyStore) {
         this.ks = keyStore;
-        this.dataBaseUtils = dataBaseUtils;
     }
 
     public X509Certificate getCaCert(String alias){
