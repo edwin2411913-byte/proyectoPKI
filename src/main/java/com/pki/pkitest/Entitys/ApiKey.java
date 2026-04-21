@@ -5,22 +5,23 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "MITCMS02_APIKEY")
 public class ApiKey {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "CD_ID")
     private UUID id;
 
@@ -39,9 +40,6 @@ public class ApiKey {
 
     @Column(name = "FH_LAST_USED_AT")
     private OffsetDateTime lastUsedAt;
-
-    @Column(name = "FH_CREATED_AT", updatable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
 }
 
     

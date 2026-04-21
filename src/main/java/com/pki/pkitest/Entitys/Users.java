@@ -1,30 +1,34 @@
 package com.pki.pkitest.Entitys;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.HashSet;
+
+import java.util.Set;
 import java.util.UUID;
 
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "MITCMS01_USERS")
 public class Users {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "CD_ID", updatable = false, nullable = false)
     private UUID id;
 
@@ -37,24 +41,17 @@ public class Users {
     @Column(name = "NB_HASHED_PASSWORD", nullable = false)
     private String password;
 
-    @Column(name = "NB_ROLE", length = 20)
-    private String role = "USER";
-
     @Column(name = "NB_IS_ACTIVE")
     private Boolean isActive = true;
 
-    @Column(name = "FH_CREATED_AT", updatable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    @Column(name = "FH_CREATED_AT", insertable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
-    // Relaciones
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ApiKey> apiKeys = new ArrayList<>();
-
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
-    private List<Certificates> certificates = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user")
-    private List<AuditLog> auditLogs = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "MITCMS01_USER_ROLES",
+        joinColumns = @JoinColumn(name = "CD_USER_ID"),
+        inverseJoinColumns = @JoinColumn(name = "CD_ROLE_ID")
+    )
+    private Set<Role> roles = new HashSet<>();
 }
-
-

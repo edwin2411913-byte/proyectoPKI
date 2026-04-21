@@ -35,12 +35,14 @@ public class AuditLog {
     @Column(name = "NB_ACTION", nullable = false, length = 100)
     private String action;
 
+    // Mapeo simple de JSONB como String. 
+    // Para manipulación avanzada se recomienda JsonNode de Jackson.
     @Column(name = "NB_DETAILS", columnDefinition = "jsonb")
-    private String details; // Se puede usar una clase personalizada si tienes un convertidor de JSON
+    private String details;
 
     @Column(name = "NB_IP_ADDRESS", length = 45)
     private String ipAddress;
 
-    @Column(name = "FH_TIMESTAMP", updatable = false)
-    private OffsetDateTime timestamp = OffsetDateTime.now();
+    @Column(name = "FH_TIMESTAMP", insertable = false, updatable = false)
+    private OffsetDateTime timestamp;
 }

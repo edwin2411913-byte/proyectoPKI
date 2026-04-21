@@ -3,6 +3,8 @@ package com.pki.pkitest.Utils;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
@@ -11,6 +13,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -91,5 +94,19 @@ public class CiferUtils {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    public String calcularSha256(String plaintText){
+        try{
+
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedHash = digest.digest(
+                plaintText.getBytes()
+            );
+            return Hex.toHexString(encodedHash);
+
+        }catch(NoSuchAlgorithmException e){
+            throw new RuntimeException("No se encontro disponible el algoritmo SHA 256 para realizar el Hash");
+        }
     }
 }

@@ -31,17 +31,19 @@ public class Revocation {
     @Column(name = "CD_ID")
     private Integer id;
 
+    // Relación con el certificado mediante su número de serie
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CD_SERIAL_NUMBER", nullable = false, referencedColumnName = "CD_SERIAL_NUMBER")
+    @JoinColumn(name = "CD_SERIAL_NUMBER", referencedColumnName = "CD_SERIAL_NUMBER", nullable = false)
     private Certificates certificate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "NB_REASON", nullable = false)
     private RevocationReason reason;
 
-    @Column(name = "FH_REVOKED_AT", updatable = false)
-    private OffsetDateTime revokedAt = OffsetDateTime.now();
+    @Column(name = "FH_REVOKED_AT", insertable = false, updatable = false)
+    private OffsetDateTime revokedAt;
 
     @Column(name = "FH_INVALIDITY_DATE")
     private OffsetDateTime invalidityDate;
+
 }

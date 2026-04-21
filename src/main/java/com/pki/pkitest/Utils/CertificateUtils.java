@@ -103,7 +103,7 @@ public class CertificateUtils {
         X509CertificateHolder holder = cBuilder.build(signer);
 
         String cert = convertoToPem( new JcaX509CertificateConverter().getCertificate(holder));
-        dataBaseUtils.guardarCertificado(cert, serial.toString(), csr.getSubject().toString(), 730);
+        //dataBaseUtils.guardarCertificado(cert, serial.toString(), csr.getSubject().toString(), 730);
         return cert;
         
         
