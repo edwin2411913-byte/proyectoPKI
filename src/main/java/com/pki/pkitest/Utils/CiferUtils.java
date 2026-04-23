@@ -26,13 +26,13 @@ public class CiferUtils {
         this.ks = keyStore;
     }
 
-    public String ciferAES(String plainTex, String ksAlias){
+    public String ciferAES(String plainTex, String ksAlias) {
         SecretKey key;
-        
-        try{
-            key = (SecretKey)ks.getKey(ksAlias, null);
 
-            byte[] iv = new byte[12]; 
+        try {
+            key = (SecretKey) ks.getKey(ksAlias, null);
+
+            byte[] iv = new byte[12];
             new SecureRandom().nextBytes(iv);
 
             // 2. Configurar GCM con un tag de autenticación de 128 bits (16 bytes)
@@ -43,24 +43,23 @@ public class CiferUtils {
             byte[] cipherText = cipher.doFinal(plainTex.getBytes());
             // Concatenar IV + Texto Cifrado para poder descifrar después
             byte[] cipherTextWithIv = ByteBuffer.allocate(iv.length + cipherText.length)
-                .put(iv)
-                .put(cipherText)
-                .array();
+                    .put(iv)
+                    .put(cipherText)
+                    .array();
 
-        return Base64.getEncoder().encodeToString(cipherTextWithIv);
-        }
-        catch(Exception e){
-            throw new RuntimeException("error"+ e.getMessage());
+            return Base64.getEncoder().encodeToString(cipherTextWithIv);
+        } catch (Exception e) {
+            throw new RuntimeException("error" + e.getMessage());
         }
     }
 
-    public String decrypAES(String encryptedData, String ksAlias){
-        try{
+    public String decrypAES(String encryptedData, String ksAlias) {
+        try {
             byte[] decoded = Base64.getDecoder().decode(encryptedData);
 
             // 1. Extraer el IV (12 bytes para GCM)
             byte[] iv = Arrays.copyOfRange(decoded, 0, 12);
-            
+
             // 2. El resto es Ciphertext + Tag (el Tag suelen ser los últimos 16 bytes)
             byte[] cipherTextWithTag = Arrays.copyOfRange(decoded, 12, decoded.length);
 
@@ -82,11 +81,11 @@ public class CiferUtils {
             String valorReal = new String(plainTextBytes, StandardCharsets.UTF_8);
             System.out.println("Texto descifrado: " + valorReal);
             return valorReal;
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Eror" + e.getMessage());
         }
     }
+
     // Utilería para visualizar el IV
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
@@ -96,16 +95,15 @@ public class CiferUtils {
         return sb.toString();
     }
 
-    public String calcularSha256(String plaintText){
-        try{
+    public String calcularSha256(String plaintText) {
+        try {
 
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] encodedHash = digest.digest(
-                plaintText.getBytes()
-            );
+                    plaintText.getBytes());
             return Hex.toHexString(encodedHash);
 
-        }catch(NoSuchAlgorithmException e){
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("No se encontro disponible el algoritmo SHA 256 para realizar el Hash");
         }
     }

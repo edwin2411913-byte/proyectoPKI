@@ -35,7 +35,7 @@ public class SecurytyConfig {
 
                 .requestMatchers(HttpMethod.POST,"/ciferAES").hasRole("AES_USER")
                 .requestMatchers(HttpMethod.POST,"/deciferAES").hasRole("AES_USER")
-                .requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("KRD_USER","KDH_USER", "MTLS_USER")
+                .requestMatchers(HttpMethod.POST,"/issueCertificate").permitAll()
                 .requestMatchers(HttpMethod.POST,"/getJWS").permitAll()
                 .requestMatchers(HttpMethod.GET, "/TestApikey").permitAll()
                 .requestMatchers(HttpMethod.GET,"/**").denyAll()

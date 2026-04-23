@@ -1,8 +1,7 @@
 package com.pki.pkitest.Services.DB_Services;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.pki.pkitest.Repositoris.CertificateRepository;
@@ -10,24 +9,25 @@ import com.pki.pkitest.Repositoris.CertificateRepository;
 @Service
 public class CertificateServices {
 
-    @Autowired
+    
     private CertificateRepository certificateRepository;
+
+    public CertificateServices(CertificateRepository certificateRepository){
+        this.certificateRepository = certificateRepository;
+    }
 
     public void saveCertificate(String serialNumber,
         UUID userId,
         UUID caId,
         String commonName,
-        String certificatePem,
-        Integer daysValid           // Validez
+        String certificatePem
 ) {
     try {
-        certificateRepository.generateCertificate(
-            serialNumber,
-            userId,
-            caId,
-            commonName,
-            certificatePem,
-            daysValid );
+        certificateRepository.addEndEntityCertificate(
+            serialNumber,userId,caId, commonName, certificatePem,
+            OffsetDateTime.now(), 
+            OffsetDateTime.now().plusYears(1)
+        );
         
         System.out.println("Certificado guardados exitosamente (Transacción Completa)");
         

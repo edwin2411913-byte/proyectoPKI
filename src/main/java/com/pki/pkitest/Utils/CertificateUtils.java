@@ -6,6 +6,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.UUID;
 
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -40,9 +41,11 @@ public class CertificateUtils {
 
 
     public KeyStore ks;
+    public DbUtils dbUtils;
 
-    public CertificateUtils(@Qualifier("hsmKeyStore") KeyStore keyStore) {
+    public CertificateUtils(@Qualifier("hsmKeyStore") KeyStore keyStore , DbUtils dbUtils) {
         this.ks = keyStore;
+        this.dbUtils= dbUtils;
     }
 
     public X509Certificate getCaCert(String alias){
@@ -73,7 +76,8 @@ public class CertificateUtils {
         }    
     }
 
-    public String getCertificate(PKCS10CertificationRequest csr, X509Certificate caCert , PrivateKey caPrivateKey, String type){
+    public String getCertificate(PKCS10CertificationRequest csr, X509Certificate caCert , PrivateKey caPrivateKey, 
+                                    String type, UUID caId, UUID useId){
         
         try{
 
@@ -101,7 +105,7 @@ public class CertificateUtils {
         X509CertificateHolder holder = cBuilder.build(signer);
 
         String cert = convertoToPem( new JcaX509CertificateConverter().getCertificate(holder));
-        //dataBaseUtils.guardarCertificado(cert, serial.toString(), csr.getSubject().toString(), 730);
+        dbUtils.saveCertificate(serial.toString(), csr.getSubject().toString(), cert, caId, useId);
         return cert;
         
         

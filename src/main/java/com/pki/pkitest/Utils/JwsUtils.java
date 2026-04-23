@@ -58,6 +58,7 @@ public class JwsUtils {
                                     .expirationTime(new Date(new Date().getTime() + 3600 * 10000))
                                     .claim("Payload", contenido)
                                     .claim("authorities", users.getRoles().stream().map(Role::getName).toList())
+                                    .claim("userID", users.getId())
                                     .build();
             
             SignedJWT signedJWT = new SignedJWT(

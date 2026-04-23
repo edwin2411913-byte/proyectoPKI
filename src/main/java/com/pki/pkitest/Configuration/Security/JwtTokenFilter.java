@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -54,6 +55,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
                 Object payloadObject = claims.getClaim("Payload");
                 request.setAttribute("payload_jws", payloadObject);
+                request.setAttribute("userID", UUID.fromString(claims.getStringClaim("userID")));
                 String username = claims.getSubject();
 
                 UsernamePasswordAuthenticationToken auth = 

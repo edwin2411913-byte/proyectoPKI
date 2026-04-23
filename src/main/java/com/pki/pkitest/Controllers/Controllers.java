@@ -11,6 +11,7 @@ import com.pki.pkitest.Services.JwsServices;
 import com.pki.pkitest.Services.PkiServices;
 import com.pki.pkitest.Services.ServisCifer;
 
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -48,9 +49,10 @@ public class Controllers {
     }
 
     @PostMapping("/issueCertificate")
-    public ResponseEntity<String> issueCertificate(@RequestAttribute("payload_jws") Object payload) {
+    public ResponseEntity<String> issueCertificate(@RequestAttribute("payload_jws") Object payload,
+                                                    @RequestAttribute("userID") UUID userId) {
         RequestCSRModel csr = jwsServices.convertJWTInCSR(payload);
-        return ResponseEntity.ok(pkiServices.getCertificate(csr.getCsrRequest(), csr.getType()));
+        return ResponseEntity.ok(pkiServices.getCertificate(csr.getCsrRequest(), csr.getType(), userId));
     }
 
     @PostMapping("getJWS")
