@@ -14,11 +14,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
 import org.bouncycastle.util.encoders.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CiferUtils {
+    private static final Logger logger = LoggerFactory.getLogger(CiferUtils.class);
 
     public final KeyStore ks;
 
@@ -27,6 +30,7 @@ public class CiferUtils {
     }
 
     public String ciferAES(String plainTex, String ksAlias) {
+        System.out.printf("entro verdad");
         SecretKey key;
 
         try {
@@ -49,7 +53,9 @@ public class CiferUtils {
 
             return Base64.getEncoder().encodeToString(cipherTextWithIv);
         } catch (Exception e) {
-            throw new RuntimeException("error" + e.getMessage());
+            e.printStackTrace();
+            logger.error("Error en ciferAES para el alias: {}", ksAlias, e);
+            throw new RuntimeException("Error en cifrado AES: " + e.getMessage());
         }
     }
 

@@ -9,12 +9,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -33,12 +29,11 @@ public class SecurytyConfig {
            
            .authorizeHttpRequests(aut -> aut
 
-                .requestMatchers(HttpMethod.POST,"/ciferAES").hasRole("AES_USER")
-                .requestMatchers(HttpMethod.POST,"/deciferAES").hasRole("AES_USER")
-                .requestMatchers(HttpMethod.POST,"/issueCertificate").permitAll()
-                .requestMatchers(HttpMethod.POST,"/getJWS").permitAll()
-                .requestMatchers(HttpMethod.GET, "/TestApikey").permitAll()
-                .requestMatchers(HttpMethod.GET,"/**").denyAll()
+                .requestMatchers(HttpMethod.POST,"/ciferAES").hasAnyRole("MTLS","KDH", "KRD")
+                .requestMatchers(HttpMethod.POST,"/deciferAES").hasAnyRole("KRD","KDH","MTLS")
+                .requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("KDH","MTLS","KRD")
+                .requestMatchers(HttpMethod.POST,"/getJWS").hasAnyRole("KDH","MTLS","KRD")
+                .requestMatchers(HttpMethod.GET, "/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").denyAll()
                 .requestMatchers(HttpMethod.PUT, "/**").denyAll()
                 .requestMatchers(HttpMethod.HEAD, "/**").denyAll()
@@ -54,6 +49,7 @@ public class SecurytyConfig {
            .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
            .httpBasic(Customizer.withDefaults())
+
            .addFilterBefore(new JwtTokenFilter(certificateUtils), UsernamePasswordAuthenticationFilter.class);
 
            return http.build();

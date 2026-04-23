@@ -1,4 +1,4 @@
-package com.pki.pkitest.Services.Seguridad;
+package com.pki.pkitest.Configuration.Security;
 
 import com.pki.pkitest.Entitys.Role;
 import com.pki.pkitest.Entitys.Users;
@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class UserSecurityServices implements UserDetailsService {
@@ -20,22 +19,16 @@ public class UserSecurityServices implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String userName){
-        Users userEntity = this.userRepository.findByusername(userName)
-                .orElseThrow(() -> new UsernameNotFoundException("User " +  userName + " not found"));
-
-
-        String[] roles = userEntity.getRoles().stream()
-                .map(Role::getName)
-                .toArray(String[]::new);
-
+    public UserDetails loadUserByUsername(String username){
+        Users userEntity = this.userRepository.findByusername(username)
+                            .orElseThrow(() -> new UsernameNotFoundException("User; " + username + "No encontrado"));
+        String[] roles = userEntity.getRoles().stream().map(Role::getName).toArray(String[]::new);
 
         return User.builder()
                 .username(userEntity.getUsername())
                 .password(userEntity.getPassword())
                 .roles(roles)
                 .build();
-
     }
 
 }

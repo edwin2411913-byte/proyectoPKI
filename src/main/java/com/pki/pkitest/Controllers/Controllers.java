@@ -2,7 +2,6 @@ package com.pki.pkitest.Controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.pki.pkitest.Models.DecryptData;
 import com.pki.pkitest.Models.EncriptData;
 import com.pki.pkitest.Models.JWSGeneral;
@@ -10,9 +9,7 @@ import com.pki.pkitest.Models.RequestCSRModel;
 import com.pki.pkitest.Services.JwsServices;
 import com.pki.pkitest.Services.PkiServices;
 import com.pki.pkitest.Services.ServisCifer;
-
 import java.util.UUID;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -56,7 +53,7 @@ public class Controllers {
     }
 
     @PostMapping("getJWS")
-    public ResponseEntity<String> postMethodName(Authentication authentication,@RequestBody JWSGeneral paylod) {
+    public ResponseEntity<String> getJWT(Authentication authentication,@RequestBody JWSGeneral paylod) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     
         return ResponseEntity.ok(jwsServices.crearJWS(paylod, userDetails.getUsername()));
