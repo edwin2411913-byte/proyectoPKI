@@ -14,10 +14,10 @@ public class DbUtils {
         this.certificateServices = certificateServices;
     }
 
-    public void saveCertificate(String serialName, String CommonName, String cerPem, UUID caId, UUID userId){
+    public void saveCertificate(String serialName, String CommonName, String cerPem, UUID caId, UUID userId, String type){
 
         
-        certificateServices.saveCertificate(serialName, userId, caId, CommonName, cerPem);
+        certificateServices.saveCertificate(serialName, userId, caId, CommonName, cerPem, type);
     }
 
 }

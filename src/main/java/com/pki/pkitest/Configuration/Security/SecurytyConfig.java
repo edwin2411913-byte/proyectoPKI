@@ -29,10 +29,12 @@ public class SecurytyConfig {
            
            .authorizeHttpRequests(aut -> aut
 
-                .requestMatchers(HttpMethod.POST,"/ciferAES").hasAnyRole("MTLS","KDH", "KRD")
-                .requestMatchers(HttpMethod.POST,"/deciferAES").hasAnyRole("KRD","KDH","MTLS")
-                .requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("KDH","MTLS","KRD")
-                .requestMatchers(HttpMethod.POST,"/getJWS").hasAnyRole("KDH","MTLS","KRD")
+                .requestMatchers(HttpMethod.POST,"/ciferAES").hasAnyRole("KRD","KDH","MTLS", "ADMIN")
+                .requestMatchers(HttpMethod.POST,"/deciferAES").hasAnyRole("KRD","KDH","MTLS", "ADMIN")
+                .requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("ADMIN")
+                .requestMatchers(HttpMethod.POST,"/getJWS").hasAnyRole("KDH","MTLS","KRD", "ADMIN")
+                   .requestMatchers(HttpMethod.POST,"/Admin/**").hasRole("ADMIN")
+                   .requestMatchers(HttpMethod.POST,"/ocsp").permitAll()
                 .requestMatchers(HttpMethod.GET, "/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").denyAll()
                 .requestMatchers(HttpMethod.PUT, "/**").denyAll()

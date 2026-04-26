@@ -105,7 +105,7 @@ public class CertificateUtils {
         X509CertificateHolder holder = cBuilder.build(signer);
 
         String cert = convertoToPem( new JcaX509CertificateConverter().getCertificate(holder));
-        dbUtils.saveCertificate(serial.toString(), csr.getSubject().toString(), cert, caId, useId);
+        dbUtils.saveCertificate(serial.toString(), csr.getSubject().toString(), cert, caId, useId, type);
         return cert;
         
         
@@ -115,10 +115,7 @@ public class CertificateUtils {
     }
 
     private X509v3CertificateBuilder CreateExtencion (X509v3CertificateBuilder cBuilder, String type, PKCS10CertificationRequest csr, X509Certificate caCert){
-        try{    
-        ////Agregamos Extencion de Entidad fianl
-            BasicConstraints basicConstraints = new BasicConstraints(false);
-            cBuilder.addExtension(Extension.basicConstraints, false, basicConstraints);
+        try{
 
             //Cargamos las extecion del Nombre del emisor
             final SubjectPublicKeyInfo publicKeyInfo1 = SubjectPublicKeyInfo.getInstance( new JcaPKCS10CertificationRequest(csr).getPublicKey().getEncoded());
@@ -132,9 +129,26 @@ public class CertificateUtils {
             AuthorityKeyIdentifier authorityKeyIdentifier = new X509ExtensionUtils((digCalc)).createAuthorityKeyIdentifier(publicKeyInfo);
             cBuilder.addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
 
-            //Cargamos los usos del certificado
-            KeyUsage keyUsage = new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature);
-            cBuilder.addExtension(Extension.keyUsage, false, keyUsage);
+            if("CA".equalsIgnoreCase(type)){
+                ///Agregamos Entencion de CA
+                BasicConstraints basicConstraints = new BasicConstraints(false);
+                KeyUsage usage = new KeyUsage(
+                        KeyUsage.digitalSignature |
+                                KeyUsage.keyCertSign |
+                                KeyUsage.cRLSign
+                );
+
+                cBuilder.addExtension(Extension.keyUsage, true, usage);
+            }
+            if("MTLS".equalsIgnoreCase(type) || "KRD".equalsIgnoreCase(type) || "KDH".equalsIgnoreCase(type)){
+                ////Agregamos Extencion de Entidad fianl
+                BasicConstraints basicConstraints = new BasicConstraints(false);
+                cBuilder.addExtension(Extension.basicConstraints, false, basicConstraints);
+                //Cargamos los usos del certificado
+                KeyUsage keyUsage = new KeyUsage(KeyUsage.nonRepudiation | KeyUsage.digitalSignature);
+                cBuilder.addExtension(Extension.keyUsage, false, keyUsage);
+            }
+
 
             //Cargamos la extencion de proposito del certfificado para - mtls
             if(type.equals("MTLS")){

@@ -9,6 +9,8 @@ import com.pki.pkitest.Models.RequestCSRModel;
 import com.pki.pkitest.Services.JwsServices;
 import com.pki.pkitest.Services.PkiServices;
 import com.pki.pkitest.Services.ServisCifer;
+
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -46,17 +48,22 @@ public class Controllers {
     }
 
     @PostMapping("/issueCertificate")
-    public ResponseEntity<String> issueCertificate(@RequestAttribute("payload_jws") Object payload,
+    public ResponseEntity<?> issueCertificate(@RequestAttribute("payload_jws") Object payload,
                                                     @RequestAttribute("userID") UUID userId) {
         RequestCSRModel csr = jwsServices.convertJWTInCSR(payload);
         return ResponseEntity.ok(pkiServices.getCertificate(csr.getCsrRequest(), csr.getType(), userId));
     }
 
-    @PostMapping("getJWS")
-    public ResponseEntity<String> getJWT(Authentication authentication,@RequestBody JWSGeneral paylod) {
+    @PostMapping("/getJWS")
+    public ResponseEntity<?> getJWT(Authentication authentication,@RequestBody JWSGeneral paylod) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     
-        return ResponseEntity.ok(jwsServices.crearJWS(paylod, userDetails.getUsername()));
+        return ResponseEntity.ok(Map.of("JWT",jwsServices.crearJWS(paylod, userDetails.getUsername())));
+    }
+
+    @PostMapping("/ocsp")
+    public ResponseEntity<?> ocsp(){
+        return ResponseEntity.ok(Map.of("OcspResponse","ok"));
     }
 
     

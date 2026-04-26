@@ -6,6 +6,7 @@ import java.security.cert.X509Certificate;
 import java.util.UUID;
 
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.pki.pkitest.Utils.CertificateUtils;
@@ -13,6 +14,30 @@ import com.pki.pkitest.Utils.CertificateUtils;
 @Service
 public class PkiServices {
     public CertificateUtils certificateUtils;
+
+    @Value("${app.ca.mtls.alias}")
+    private String mtlsAlias;
+
+    @Value("${app.ca.mtls.id}")
+    private UUID mtlsId;
+
+    @Value("${app.ca.KRD.alias}")
+    private String krdAlias;
+
+    @Value("${app.ca.KRD.id}")
+    private UUID krdId;
+
+    @Value("${app.ca.KDH.alias}")
+    private String kdhAlias;
+
+    @Value("${app.ca.KDH.id}")
+    private UUID kdhId;
+
+    @Value("${app.ca.ROOT.alias}")
+    private String rootAlias;
+
+    @Value("${app.ca.ROOT.id}")
+    private UUID rootId;
 
 
     public PkiServices(CertificateUtils certificateUtils){
@@ -25,14 +50,14 @@ public class PkiServices {
         String caAlias;
         UUID caId;
         if ("MTLS".equals(type.toUpperCase())) {
-            caAlias = "CA_MTLS";
-            caId = UUID.fromString("3a388685-c06d-4dd1-9a9a-314c182e3e6c");
+            caAlias = mtlsAlias;
+            caId = mtlsId;
         } else if ("KDH".equals(type.toLowerCase())) {
-            caAlias = "CA_KDH";
-            caId = UUID.fromString("981f51a0-bd56-415e-a824-1ba85973de36");
+            caAlias = kdhAlias;
+            caId = kdhId;
         } else if ("KRD".equals(type.toUpperCase())) {
-             caAlias = "CA_KRD";
-             caId = UUID.fromString("c8af09e8-fe7c-4c95-abcd-3b6daf930cf4");
+             caAlias = krdAlias;
+             caId = krdId;
         } else {
             throw new IllegalArgumentException("Tipo de certificado no soportado: " + type);
         }
@@ -40,6 +65,24 @@ public class PkiServices {
         X509Certificate caCert = certificateUtils.getCaCert(caAlias);
         PrivateKey caPrivateKey = certificateUtils.getCaPrivateKey(caAlias);
         
+        return certificateUtils.getCertificate(csr, caCert, caPrivateKey, type, caId, userId);
+    }
+
+    public String getCaCertifice(String stringCSR , String type, UUID userId){
+
+        PKCS10CertificationRequest csr =  certificateUtils.convertoCSR(stringCSR);
+        String caAlias;
+        UUID caId;
+        if ("CA".equals(type.toUpperCase())) {
+            caAlias = rootAlias;
+            caId = rootId;
+        } else {
+            throw new IllegalArgumentException("Tipo de certificado no soportado: " + type);
+        }
+
+        X509Certificate caCert = certificateUtils.getCaCert(caAlias);
+        PrivateKey caPrivateKey = certificateUtils.getCaPrivateKey(caAlias);
+
         return certificateUtils.getCertificate(csr, caCert, caPrivateKey, type, caId, userId);
     }
 
