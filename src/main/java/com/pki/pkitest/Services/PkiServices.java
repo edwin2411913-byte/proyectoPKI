@@ -73,11 +73,11 @@ public class PkiServices {
         PKCS10CertificationRequest csr =  certificateUtils.convertoCSR(stringCSR);
         String caAlias;
         UUID caId;
-        if ("CA".equals(type.toUpperCase())) {
+        if ("CA".equalsIgnoreCase(type) || "CA_OCSP".equalsIgnoreCase(type)) {
             caAlias = rootAlias;
             caId = rootId;
         } else {
-            throw new IllegalArgumentException("Tipo de certificado no soportado: " + type);
+            throw new IllegalArgumentException("Tipo de certificado no esta soportado: " + type);
         }
 
         X509Certificate caCert = certificateUtils.getCaCert(caAlias);

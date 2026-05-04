@@ -1,9 +1,11 @@
 package com.pki.pkitest.Utils;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.UUID;
@@ -34,10 +36,24 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 
 @Service
 public class CertificateUtils {
+
+
+    @Value("${app.ca.mtls.alias}")
+    private String mtlsAlias;
+
+    @Value("${app.ca.KRD.alias}")
+    private String krdAlias;
+
+    @Value("${app.ca.KDH.alias}")
+    private String kdhAlias;
 
 
     public KeyStore ks;
@@ -131,15 +147,32 @@ public class CertificateUtils {
 
             if("CA".equalsIgnoreCase(type)){
                 ///Agregamos Entencion de CA
-                BasicConstraints basicConstraints = new BasicConstraints(false);
+                BasicConstraints basicConstraints = new BasicConstraints(0);
+                cBuilder.addExtension(Extension.basicConstraints, true, basicConstraints);
                 KeyUsage usage = new KeyUsage(
-                        KeyUsage.digitalSignature |
-                                KeyUsage.keyCertSign |
+                        KeyUsage.digitalSignature |    // Firma digital
+                                KeyUsage.nonRepudiation   |    // Sin repudio
+                                KeyUsage.keyEncipherment  |    // Cifrado de clave
+                                KeyUsage.dataEncipherment |    // Cifrado de datos
+                                KeyUsage.keyCertSign      |    // Firma de certificados
                                 KeyUsage.cRLSign
                 );
 
                 cBuilder.addExtension(Extension.keyUsage, true, usage);
             }
+
+            if("CA_OCSP".equalsIgnoreCase(type)){
+                ///Agregamos Entencion de CA
+                BasicConstraints basicConstraints = new BasicConstraints(false);
+                cBuilder.addExtension(Extension.basicConstraints, false, basicConstraints);
+
+                ExtendedKeyUsage extendedKeyUsage = new ExtendedKeyUsage(KeyPurposeId.id_kp_OCSPSigning);
+                cBuilder.addExtension(Extension.extendedKeyUsage, false, extendedKeyUsage);
+
+                KeyUsage usage = new KeyUsage(KeyUsage.digitalSignature);
+                cBuilder.addExtension(Extension.keyUsage, true, usage);
+            }
+
             if("MTLS".equalsIgnoreCase(type) || "KRD".equalsIgnoreCase(type) || "KDH".equalsIgnoreCase(type)){
                 ////Agregamos Extencion de Entidad fianl
                 BasicConstraints basicConstraints = new BasicConstraints(false);
@@ -197,6 +230,50 @@ public class CertificateUtils {
 
         }catch(Exception e){
             throw new RuntimeException("Erro al convertir cadena string csr a PKCS10");
+        }
+    }
+
+    public X509Certificate convertToCer(String stringCert) {
+        try {
+            byte[] certBytes = java.util.Base64.getDecoder().decode(stringCert);
+            X509CertificateHolder holder = new X509CertificateHolder(certBytes);
+            return new JcaX509CertificateConverter().getCertificate(holder);
+
+        } catch (IOException | CertificateException e) {
+            throw new RuntimeException("Erro al convertir cadena string cert a X509Certificate");
+        }
+    }
+
+    public String getCertificateAlias (X509Certificate certificate){
+        String commonName = "";
+        String alias = "";
+
+        String dn = certificate.getIssuerX500Principal().getName();
+        try {
+
+            LdapName ldapDN = new LdapName(dn);
+
+            for(Rdn rdn : ldapDN.getRdns()) {
+                if (rdn.getType().equalsIgnoreCase("CN")) {
+                    commonName = rdn.getValue().toString();
+                    break;
+                }
+            }
+
+            // Lógica de asignación basada en el Common Name (CN)
+            if (commonName.equals("MIT Intermediate MTLS CA")) {
+                // Nota: Asumo MTLS por tu descripción de la variable mtlsAlias
+                alias = mtlsAlias;
+            } else if (commonName.equals("MIT Intermediate KRD CA")) {
+                alias = krdAlias;
+            } else if (commonName.equals("MIT Intermediate KDH CA")) {
+                alias = kdhAlias;
+            } else {
+                alias = "defaultAlias"; // Opcional: un alias por defecto
+            }
+            return alias;
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

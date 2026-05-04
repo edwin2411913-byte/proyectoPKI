@@ -19,9 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
-
 @RestController
 public class Controllers {
 
@@ -59,11 +56,6 @@ public class Controllers {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     
         return ResponseEntity.ok(Map.of("JWT",jwsServices.crearJWS(paylod, userDetails.getUsername())));
-    }
-
-    @PostMapping("/ocsp")
-    public ResponseEntity<?> ocsp(){
-        return ResponseEntity.ok(Map.of("OcspResponse","ok"));
     }
 
     

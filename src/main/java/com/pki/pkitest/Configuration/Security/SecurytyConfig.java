@@ -34,7 +34,7 @@ public class SecurytyConfig {
                 .requestMatchers(HttpMethod.POST,"/issueCertificate").hasAnyRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,"/getJWS").hasAnyRole("KDH","MTLS","KRD", "ADMIN")
                    .requestMatchers(HttpMethod.POST,"/Admin/**").hasRole("ADMIN")
-                   .requestMatchers(HttpMethod.POST,"/ocsp").permitAll()
+                   .requestMatchers(HttpMethod.GET,"/ocsp/request").hasAnyRole("KDH","MTLS","KRD", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").denyAll()
                 .requestMatchers(HttpMethod.PUT, "/**").denyAll()
