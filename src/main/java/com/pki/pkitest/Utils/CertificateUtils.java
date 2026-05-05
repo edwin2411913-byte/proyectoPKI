@@ -1,14 +1,12 @@
 package com.pki.pkitest.Utils;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Date;
-import java.util.UUID;
+import java.security.*;
+import java.security.cert.*;
+import java.util.*;
 
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -54,6 +52,9 @@ public class CertificateUtils {
 
     @Value("${app.ca.KDH.alias}")
     private String kdhAlias;
+
+    @Value("${app.ca.ROOT.alias}")
+    private String rootAlias;
 
 
     public KeyStore ks;
@@ -104,8 +105,8 @@ public class CertificateUtils {
         X509v3CertificateBuilder cBuilder = new JcaX509v3CertificateBuilder(
             X500Name.getInstance(caCert.getSubjectX500Principal().getEncoded()), 
             serial,
+            notBefore,
             notAfter,
-            notBefore, 
             csr.getSubject(),  
             new JcaPKCS10CertificationRequest(csr).getPublicKey()
         );
@@ -274,6 +275,47 @@ public class CertificateUtils {
             return alias;
         }catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public String verifyChain(X509Certificate certificate )  {
+        try {
+            X509Certificate caRoort = getCaCert(rootAlias);
+            X509Certificate caIntermedite = getCaCert(getCertificateAlias(certificate));
+
+        // 1. Instanciar CertificateFactory con el proveedor BC
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+
+        // 3. Configurar el Trust Anchor (Root)
+        TrustAnchor anchor = new TrustAnchor(caRoort, null);
+        Set<TrustAnchor> trustAnchors = Collections.singleton(anchor);
+
+        // 4. Crear el CertPath (Cadena a validar: Intermedio y Final)
+        List<X509Certificate> certs = new ArrayList<>();
+        certs.add(certificate);
+        certs.add(caIntermedite);
+        CertPath certPath = cf.generateCertPath(certs);
+
+        // 5. Parámetros de validación
+        PKIXParameters params = new PKIXParameters(trustAnchors);
+
+        // Importante: Desactivar CRL si no tienes los puntos de distribución accesibles
+        params.setRevocationEnabled(false);
+
+        // 6. Ejecutar la validación
+        CertPathValidator validator = CertPathValidator.getInstance("PKIX");
+
+
+            CertPathValidatorResult result = validator.validate(certPath, params);
+            System.out.println("Certificado Válido: OK");
+            return "ok";
+        } catch (CertPathValidatorException | CertificateException |
+                 NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+            System.err.println("Error en la validación: " + e.getMessage());
+            e.printStackTrace();
+            return "error";
+
         }
     }
 

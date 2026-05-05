@@ -18,9 +18,22 @@ public class OcspServices {
         }
 
         public String getOcspRequest(String cert){
+
             X509Certificate certificate = certificateUtils.convertToCer(cert);
+            ocspUtils.verifyChain(certificate);
             return ocspUtils.getOcspRequest(certificate);
 
+        }
+
+        public String ocsp(String cert){
+            X509Certificate certificate = certificateUtils.convertToCer(cert);
+            return ocspUtils.verifyChain(certificate);
+        }
+
+         public String OcspResponceServiceApi(byte[] requestOcspHex){
+
+            String ocspRes = ocspUtils.ocspResponseApi(requestOcspHex);
+            return ocspRes;
         }
 
 }

@@ -2,6 +2,7 @@ package com.pki.pkitest.Repositoris;
 
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,5 +41,7 @@ public interface CertificateRepository extends JpaRepository<Certificates, Strin
             @Param("p_certificate_pem") String certificatePem,
             @Param("p_crl_url") String crlUrl
     );
+
+    Optional<Certificates> findBySerialNumber(String serialNumber);
 
 }
