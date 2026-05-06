@@ -1,5 +1,6 @@
 package com.pki.pkitest.Services;
 
+import com.pki.pkitest.Repositoris.UserRepository;
 import com.pki.pkitest.Utils.CertificateUtils;
 import com.pki.pkitest.Utils.OcspUtils;
 import org.springframework.stereotype.Service;

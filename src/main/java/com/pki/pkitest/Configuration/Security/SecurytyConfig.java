@@ -37,6 +37,7 @@ public class SecurytyConfig {
                    .requestMatchers(HttpMethod.POST,"/ocsp/request").hasAnyRole("KDH","MTLS","KRD", "ADMIN")
                    .requestMatchers(HttpMethod.POST,"/ocsp").permitAll()
                    .requestMatchers(HttpMethod.POST,"/ocsp/ocsp").permitAll()
+                   .requestMatchers(HttpMethod.POST,"/revocaccion").hasAllRoles("KDH","MTLS","KRD", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/**").denyAll()
                 .requestMatchers(HttpMethod.PUT, "/**").denyAll()

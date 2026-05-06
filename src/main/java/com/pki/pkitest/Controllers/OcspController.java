@@ -1,7 +1,7 @@
 package com.pki.pkitest.Controllers;
 
+import com.pki.pkitest.Models.Cert;
 import com.pki.pkitest.Models.OcspRequestApi;
-import com.pki.pkitest.Models.RequestOCSP;
 import com.pki.pkitest.Services.OcspServices;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +24,7 @@ public class OcspController {
     }
 
     @PostMapping("/request")
-    public ResponseEntity<?> getRequest(@RequestBody RequestOCSP requestOCSP){
+    public ResponseEntity<?> getRequest(@RequestBody Cert requestOCSP){
         return ResponseEntity.ok(Map.of("Ocsp_Request",ocspServices.getOcspRequest(requestOCSP.getCert())));
     }
 

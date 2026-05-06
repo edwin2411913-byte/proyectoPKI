@@ -1,6 +1,6 @@
 package com.pki.pkitest.Models;
 
-public class RequestOCSP {
+public class Cert {
 
     String cert;
 
