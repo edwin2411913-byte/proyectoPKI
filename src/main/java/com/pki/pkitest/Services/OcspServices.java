@@ -26,11 +26,6 @@ public class OcspServices {
 
         }
 
-        public String ocsp(String cert){
-            X509Certificate certificate = certificateUtils.convertToCer(cert);
-            return ocspUtils.verifyChain(certificate);
-        }
-
          public String OcspResponceServiceApi(byte[] requestOcspHex){
 
             String ocspRes = ocspUtils.ocspResponseApi(requestOcspHex);

@@ -1,7 +1,10 @@
 package com.pki.pkitest.Utils;
 
+import com.pki.pkitest.Entitys.AppEnums;
 import com.pki.pkitest.Entitys.Certificates;
+import com.pki.pkitest.Entitys.Revocation;
 import com.pki.pkitest.Repositoris.CertificateRepository;
+import com.pki.pkitest.Repositoris.RevocationRepository;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
@@ -38,11 +41,13 @@ public class OcspUtils {
 
     private  final CertificateUtils certificateUtils;
     private CertificateRepository certificateRepository;
+    private RevocationRepository revocationRepository;
     public KeyStore ks;
 
-    public OcspUtils(CertificateUtils certificateUtils, CertificateRepository certificateRepository, @Qualifier("hsmKeyStore") KeyStore keyStore){
+    public OcspUtils(CertificateUtils certificateUtils, CertificateRepository certificateRepository, @Qualifier("hsmKeyStore") KeyStore keyStore, RevocationRepository revocationRepository){
         this.certificateUtils = certificateUtils;
         this.certificateRepository = certificateRepository;
+        this.revocationRepository = revocationRepository;
         this.ks = keyStore;
     }
 
@@ -92,44 +97,62 @@ public class OcspUtils {
         OCSPReq ocspRequest = null;
         BigInteger serialNumber=null;
         int estatus = 0;
+        int reasonCode = -1;
         try {
             ocspRequest = new OCSPReq(ocspRequestBytes);
             Req[] requestList = ocspRequest.getRequestList();
             CertificateID certificateID = requestList[0].getCertID();
             serialNumber = certificateID.getSerialNumber();
 
-
-            System.out.println("Número de serie (BigInteger): " + serialNumber);
-            System.out.println("Número de serie (Hex): " + serialNumber.toString(16));
         }catch (Exception e) {
-            System.err.println(e.getMessage());
+            throw new RuntimeException("Error al parsear la solicitud OCSP", e);
         }
 
 
         Certificates certificate = certificateRepository.findBySerialNumber(serialNumber.toString())
                 .orElseThrow(() -> new RuntimeException("Certificado no encontrado con serial: "));
 
+        // Evaluar el estado del certificado usando el enum
+        AppEnums.CertStatus status = certificate.getStatus();
 
-        if (certificate.getNotAfter().isBefore(OffsetDateTime.now())) {
-            estatus = 1; // Marcamos como revocado o expirado según tu lógica interna
+        // 1. Validar si está REVOCADO
+        if (certificate.getStatus() == AppEnums.CertStatus.REVOKED) {
+            estatus = 1; // OCSP revoked
+            // Obtener la razón de revocación desde la tabla de revocaciones
+            Revocation revocation = revocationRepository.findByCertificate(certificate)
+                    .orElseThrow(() -> new RuntimeException("Certificado marcado como revocado pero no existe registro en Revocation"));
+            AppEnums.RevocationReason reason = revocation.getReason();
+            reasonCode = mapRevocationReasonToOcspCode(reason);
         }
+
+
+        // 2. Validar si está EXPIRADO (usando la fecha, independientemente del estado en BD)
+        else if (certificate.getNotAfter().isBefore(OffsetDateTime.now())) {
+            estatus = 1; // revoked (no hay código OCSP para "expired", se usa unspecified)
+            reasonCode = 0; // unspecified (RFC 6960)
+        }
+        // 3. Certificado VÁLIDO (no revocado ni expirado)
+        else {
+            estatus = 0; // good
+            reasonCode = -1; // sin razón
+        }
+
         try {
-            bytes = genegenerateOcspResponse(ocspRequest, estatus);
+            bytes = genegenerateOcspResponse(ocspRequest, estatus, reasonCode);
             return HexFormat.of().formatHex(bytes);
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear la respuesta de OCSP");
+            throw new RuntimeException("Error al crear la respuesta de OCSP", e);
         }
-
-
     }
 
 
 
 
-public byte[] genegenerateOcspResponse(
+    public byte[] genegenerateOcspResponse(
         OCSPReq request,
         int status // 0: good, 1: revoked, 2: unknown
-) {
+            ,int reasonCode
+         ) {
     X509Certificate certificate = certificateUtils.getCaCert("CA_OCSP");
     PrivateKey privateKey = certificateUtils.getCaPrivateKey("CA_OCSP");
     if (certificate == null || privateKey == null){
@@ -139,7 +162,6 @@ public byte[] genegenerateOcspResponse(
     Req[] requests = request.getRequestList();
     CertificateID certId = requests[0].getCertID();
 
-    //BigInteger bi = requests[0].getCertID().getSerialNumber();
     try {
 
 
@@ -150,8 +172,11 @@ public byte[] genegenerateOcspResponse(
         if (status == 0) {
             certificateStatus = CertificateStatus.GOOD;
         } else if (status == 1) {
+            // Validar el código de razón: 0-10 son válidos según RFC, si no, usar 0 (unspecified)
+            int effectiveReason = (reasonCode >= 0 && reasonCode <= 10) ? reasonCode : 0;
             // Si está revocado, se puede añadir la fecha y razón
-            certificateStatus = new RevokedStatus(new Date(), 0);
+            certificateStatus = new RevokedStatus(new Date(), effectiveReason);
+
         } else {
             certificateStatus = new org.bouncycastle.cert.ocsp.UnknownStatus();
         }
@@ -175,5 +200,17 @@ public byte[] genegenerateOcspResponse(
     throw new RuntimeException(e);
 }
 }
+
+    private int mapRevocationReasonToOcspCode(AppEnums.RevocationReason reason) {
+        switch (reason) {
+            case KEY_COMPROMISE:      return 1;
+            case CA_COMPROMISE:       return 2;
+            case AFFILIATION_CHANGED: return 3;
+            case SUPERSEDED:          return 4;
+            case CESSATION_OF_OPERATION: return 5;
+            case CERTIFICATE_HOLD:    return 6;
+            default:                  return 0; // unspecified (por si acaso)
+        }
+    }
 
 }
